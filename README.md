@@ -1,7 +1,5 @@
 
----
-
-💳 Payment Gateway – Razorpay/Stripe Inspired
+# Payment Gateway – Razorpay/Stripe Inspired
 
 📌 Project Overview
 
