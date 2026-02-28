@@ -1,90 +1,94 @@
----
-#Payment Gateway – Razorpay/Stripe Inspired
-
-## Project Overview
-
-This project is a simplified Payment Gateway System inspired by modern fintech platforms like Razorpay and Stripe. It allows merchants to securely create payment orders and enables customers to complete payments using a hosted checkout page.
-
-The system includes:
-
-Secure Merchant Authentication (API Key + Secret)
-
-Order Creation & Retrieval APIs
-
-Payment Processing (UPI & Card)
-
-Hosted Checkout Page
-
-Merchant Dashboard
-
-Fully Dockerized Deployment
-
-
-This project simulates real-world fintech workflows including validation logic, transaction lifecycle management, and secure payment handling.
-
 
 ---
 
-## Objective
+💳 Payment Gateway – Razorpay/Stripe Inspired
 
-The main objective of this project is to:
+📌 Project Overview
 
-1. Implement secure API authentication.
+This project is a simplified Payment Gateway System inspired by modern fintech platforms such as Razorpay and Stripe. It enables merchants to securely create payment orders via API and allows customers to complete payments through a hosted checkout page.
+
+The system simulates real-world payment workflows including authentication, validation logic, transaction lifecycle management, and secure handling of financial data.
+
+Key Features
+
+🔐 Secure Merchant Authentication (API Key + Secret)
+
+📦 Order Creation & Retrieval APIs
+
+💳 Multi-Method Payment Processing (UPI & Card)
+
+🛒 Hosted Checkout Page
+
+📊 Merchant Dashboard with Transaction Analytics
+
+🐳 Fully Dockerized Deployment (Single Command Setup)
 
 
-2. Manage order lifecycle.
+
+---
+
+🎯 Objective
+
+The primary objectives of this project are:
+
+1. Implement secure API-based merchant authentication.
+
+
+2. Manage the complete order lifecycle.
 
 
 3. Validate and process UPI and Card payments.
 
 
-4. Implement a correct payment state machine.
+4. Enforce a strict payment state machine.
 
 
-5. Provide a hosted checkout experience.
+5. Provide a seamless hosted checkout experience.
 
 
-6. Offer a merchant dashboard for transaction tracking.
+6. Offer a dashboard for merchants to track transactions.
 
 
-7. Ensure complete Docker-based deployment.
+7. Ensure complete containerized deployment using Docker Compose.
 
 
 
 
 ---
 
-## System Architecture
+🏗️ System Architecture
 
-The system consists of four services:
+The application is composed of four independent services:
 
 Service	Port	Description
 
-PostgreSQL	5432	Database
+PostgreSQL	5432	Database Service
 Backend API	8000	REST API Service
 Dashboard	3000	Merchant Interface
-Checkout	3001	Hosted Payment Page
+Checkout Page	3001	Hosted Payment Interface
 
 
-All services start using:
+All services are orchestrated using Docker Compose.
+
+Start the entire system with:
 
 docker-compose up -d
 
 
 ---
 
-## Setup Instructions
+🚀 Setup Instructions
 
-1️⃣ Clone Repository
+1️⃣ Clone the Repository
 
 git clone <repository-url>
 cd payment-gateway
 
-2️⃣ Start Application
+2️⃣ Start All Services
 
 docker-compose up -d
 
-This will start:
+This automatically starts:
 
 postgres
 
@@ -95,23 +99,23 @@ dashboard
 checkout
 
 
-3️⃣ Access Services
+3️⃣ Access the Application
 
-API → http://localhost:8000
+API Base URL → http://localhost:8000
 
 Dashboard → http://localhost:3000
 
 Checkout → http://localhost:3001
 
 
-No manual setup required.
+No manual configuration is required.
 
 
 ---
 
-## Test Merchant (Auto-Seeded)
+🔐 Test Merchant (Auto-Seeded)
 
-The application automatically seeds a test merchant:
+On startup, the application automatically seeds a test merchant:
 
 Field	Value
 
@@ -121,45 +125,45 @@ API Key	key_test_abc123
 API Secret	secret_test_xyz789
 
 
-If already exists, insertion is skipped safely.
+If the merchant already exists, the system safely skips insertion.
 
 
 ---
 
-## Database Schema
+🗄️ Database Schema
 
-Merchants
+Merchants Table
 
-id (UUID, PK)
+id (UUID, Primary Key)
 
 name
 
-email (unique)
+email (unique, not null)
 
-api_key (unique)
+api_key (unique, not null)
 
-api_secret
+api_secret (not null)
 
-webhook_url
+webhook_url (optional)
 
-is_active (default true)
+is_active (default: true)
 
 created_at
 
 updated_at
 
 
-Orders
+Orders Table
 
-id (order_ + 16 alphanumeric chars)
+id (order_ + 16 alphanumeric characters)
 
-merchant_id (FK)
+merchant_id (Foreign Key → merchants.id)
 
-amount (>=100 paise)
+amount (integer, minimum 100 paise)
 
-currency (default INR)
+currency (default: INR)
 
-receipt
+receipt (optional)
 
 notes (JSON)
 
@@ -170,19 +174,19 @@ created_at
 updated_at
 
 
-Payments
+Payments Table
 
-id (pay_ + 16 alphanumeric chars)
+id (pay_ + 16 alphanumeric characters)
 
-order_id (FK)
+order_id (Foreign Key → orders.id)
 
-merchant_id (FK)
+merchant_id (Foreign Key → merchants.id)
 
 amount
 
 currency
 
-method (upi/card)
+method (upi | card)
 
 status (processing → success/failed)
 
@@ -213,7 +217,7 @@ payments.status
 
 ---
 
-## API Endpoints
+🔑 API Endpoints
 
 Health Check
 
@@ -233,9 +237,9 @@ Test Endpoint
 
 GET /api/v1/test/merchant
 
-Authentication Required
+Authentication
 
-All endpoints (except /health and test endpoint) require:
+All endpoints except /health and /api/v1/test/merchant require:
 
 X-Api-Key
 X-Api-Secret
@@ -243,7 +247,7 @@ X-Api-Secret
 
 ---
 
-## Standard Error Codes
+❗ Standard Error Codes
 
 AUTHENTICATION_ERROR
 
@@ -263,41 +267,44 @@ PAYMENT_FAILED
 
 ---
 
-## Payment Validation Logic
+💳 Payment Validation Logic
 
 UPI Validation
 
-Regex pattern:
+Validated using the regex:
 
 ^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$
 
 Card Validation
 
-Luhn Algorithm
+Luhn Algorithm for card number validation
 
-Card Network Detection (Visa, Mastercard, Amex, RuPay)
+Network detection (Visa, Mastercard, Amex, RuPay)
 
-Expiry Date Validation
+Expiry date validation (must be current or future month)
 
-Store only last 4 digits
+Only last 4 digits stored
 
-Never store CVV or full card number
+CVV and full card numbers are never stored
 
 
 
 ---
 
-## Payment State Machine
+🔄 Payment State Machine
+
+Payments follow a strict state transition model:
 
 processing → success
 processing → failed
 
-Payments are created directly in processing state.
+Payments are created directly in the processing state.
+No other transitions are allowed.
 
 
 ---
 
-## Test Mode (For Automated Evaluation)
+🧪 Test Mode (Deterministic Evaluation)
 
 Environment Variables:
 
@@ -307,9 +314,9 @@ TEST_PROCESSING_DELAY=1000
 
 When enabled:
 
-Payment outcome becomes deterministic
+Payment outcome becomes deterministic.
 
-Delay becomes fixed
+Processing delay becomes fixed.
 
 
 When disabled:
@@ -318,36 +325,38 @@ UPI success rate: 90%
 
 Card success rate: 95%
 
-Random delay between 5–10 seconds
+Random delay between 5–10 seconds.
 
 
 
 ---
 
-## Dashboard Features
+📊 Dashboard Features
 
-Login Page
+Secure Login Page
 
 API Credentials Display
 
-Transaction Statistics
+Real-time Transaction Statistics
 
 Transactions Table
 
 
-Statistics calculated dynamically:
+Statistics include:
 
 Total Transactions
 
 Total Successful Amount
 
-Success Rate %
+Success Rate (%)
 
+
+All values are dynamically calculated from the database.
 
 
 ---
 
-## Checkout Flow
+🛒 Checkout Flow
 
 Checkout URL format:
 
@@ -364,24 +373,26 @@ Flow:
 3. Submit payment
 
 
-4. Show processing state
+4. Display processing state
 
 
-5. Poll payment status
+5. Poll payment status every 2 seconds
 
 
-6. Display success or failure
+6. Show success or failure
 
 
+
+The checkout page interacts only through API endpoints and never directly accesses the database.
 
 
 ---
 
-## Security Practices
+🔒 Security Practices
 
-API Key + Secret authentication
+API Key + Secret authentication for merchants
 
-Strict input validation
+Strict request validation
 
 Standardized error handling
 
@@ -389,8 +400,28 @@ No storage of full card numbers
 
 No CVV storage
 
-Deterministic test mode for safe evaluation
+Deterministic test mode for secure evaluation
 
+
+
+---
+
+✅ Conclusion
+
+This project demonstrates real-world fintech system design, including:
+
+Secure API authentication
+
+Payment validation algorithms
+
+Strict transaction lifecycle management
+
+Full Docker-based deployment
+
+End-to-end integration between backend and frontend
+
+
+The system is evaluation-ready, production-structured, and follows best practices for financial application development.
 
 
 ---
